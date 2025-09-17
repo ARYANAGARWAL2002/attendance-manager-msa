@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus; // Add this import
 
 @RestController
 @RequestMapping("/api/users")
@@ -33,5 +34,20 @@ public class UserController {
                     return ResponseEntity.ok(dto);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        // First, check if the user exists
+        if (!userRepository.existsById(id)) {
+            // If not, return a 404 Not Found
+            return ResponseEntity.notFound().build();
+        }
+
+        // If the user exists, delete them
+        userRepository.deleteById(id);
+
+        // Return a 204 No Content status to indicate success
+        return ResponseEntity.noContent().build();
     }
 }
