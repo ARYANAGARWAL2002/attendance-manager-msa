@@ -9,6 +9,7 @@ import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors; // New import
@@ -75,5 +76,23 @@ public class CourseController {
 
         // Return all course details for the found course IDs
         return courseRepository.findAllById(courseIds);
+    }
+
+    @Transactional
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        // 1. Check if the course exists before trying to delete
+        if (!courseRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 2. Delete all student enrollments for this course
+        enrollmentRepository.deleteByCourseId(id);
+
+        // 3. Delete the course itself
+        courseRepository.deleteById(id);
+
+        // 4. Return a success status with no content
+        return ResponseEntity.noContent().build();
     }
 }
