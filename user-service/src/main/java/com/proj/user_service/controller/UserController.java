@@ -7,6 +7,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus; // Add this import
 
 @RestController
@@ -23,6 +25,17 @@ public class UserController {
         // Add logic to set role, hash password, etc.
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+        Page<UserDto> dtoPage = userPage.map(user -> {
+            UserDto dto = new UserDto();
+            BeanUtils.copyProperties(user, dto);
+            return dto;
+        });
+        return ResponseEntity.ok(dtoPage);
     }
 
     @GetMapping("/{id}")
