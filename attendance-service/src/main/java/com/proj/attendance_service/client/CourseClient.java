@@ -9,4 +9,7 @@ public interface CourseClient {
     // Note: We need to add this endpoint to our CourseController
     @GetMapping("/api/courses/{id}")
     void getCourseById(@PathVariable("id") Long id);
+
+    @GetMapping("/api/courses/{courseId}/enrollments/student/{studentId}")
+    void isStudentEnrolled(@PathVariable("courseId") Long courseId, @PathVariable("studentId") Long studentId);
 }

@@ -8,7 +8,7 @@ import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -24,7 +24,7 @@ public class AttendanceController {
         this.userClient = userClient;
         this.courseClient = courseClient;
     }
-    // In AttendanceController.java
+
     @GetMapping("/student/{studentId}")
     public List<Attendance> getAttendanceForStudent(@PathVariable Long studentId, @RequestParam Long courseId) {
         return attendanceRepository.findByStudentIdAndCourseId(studentId, courseId);
@@ -34,7 +34,7 @@ public class AttendanceController {
     public ResponseEntity<String> markAttendance(@RequestBody Attendance attendance) {
         // 1. Validate student exists by calling User Service
         try {
-            userClient.getUserById(attendance   .getStudentId());
+            userClient.getUserById(attendance.getStudentId());
         } catch (FeignException.NotFound e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student with ID " + attendance.getStudentId() + " not found.");
         }
@@ -46,7 +46,16 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course with ID " + attendance.getCourseId() + " not found.");
         }
 
-        // 3. If both exist, save the attendance record
+        // --- THIS IS THE NEW VALIDATION BLOCK ---
+        // 3. Validate that the student is enrolled in the course by calling Course Service
+        try {
+            courseClient.isStudentEnrolled(attendance.getCourseId(), attendance.getStudentId());
+        } catch (FeignException.NotFound e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Student is not enrolled in this course.");
+        }
+        // ------------------------------------
+
+        // 4. If all validations pass, save the attendance record
         attendanceRepository.save(attendance);
         return ResponseEntity.status(HttpStatus.CREATED).body("Attendance marked successfully.");
     }

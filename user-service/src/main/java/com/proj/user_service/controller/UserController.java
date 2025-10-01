@@ -11,6 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus; // Add this import
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -36,6 +39,15 @@ public class UserController {
             return dto;
         });
         return ResponseEntity.ok(dtoPage);
+    }
+    @PostMapping("/details")
+    public List<UserDto> getUsersByIds(@RequestBody List<Long> userIds) {
+        return userRepository.findAllById(userIds).stream()
+                .map(user -> {
+                    UserDto dto = new UserDto();
+                    BeanUtils.copyProperties(user, dto);
+                    return dto;
+                }).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
