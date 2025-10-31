@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306" # Expose MySQL to the host machine for debugging (optional)
+    environment:
+      MYSQL_ROOT_PASSWORD: your_strong_password # Change this!
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - attendance-network
+
+  # Eureka Server Service
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761" # Expose Eureka dashboard to host
+    networks:
+      - attendance-network
+
+  # Config Server Service
+  config-server:
+    image: aryanxagarwal/config-server # <-- MODIFIED: Pulls image from Docker Hub
+    container_name: config-server
+    ports:
+      - "8088:8088" # Expose Config Server to host
+    environment:
+      # Override config to find Eureka server by its service name
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+    networks:
+      - attendance-network
+
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    environment:
+      # Override config to find Config Server
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8088
+      # Override config to find Eureka Server
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      # Override database URL from config to point to the 'mysql-db' container
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/user_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: your_strong_password # Must match MYSQL_ROOT_PASSWORD
+    depends_on:
+      - config-server
+      - eureka-server
+      - mysql-db
+    networks:
+      - attendance-network
+
+  # Course Service
+  course-service:
+    build:
+      context: ./course-service
+    container_name: course-service
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8088
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/course_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: your_strong_password # Must match MYSQL_ROOT_PASSWORD
+    depends_on:
+      - config-server
+      - eureka-server
+      - mysql-db
+    networks:
+      - attendance-network
+
+  # Attendance Service
+  attendance-service:
+    build:
+      context: ./attendance-service
+    container_name: attendance-service
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8088
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/attendance_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: your_strong_password # Must match MYSQL_ROOT_PASSWORD
+    depends_on:
+      - config-server
+      - eureka-server
+      - mysql-db
+    networks:
+      - attendance-network
+
+  # Reporting Service
+  reporting-service:
+    build:
+      context: ./reporting-service
+    container_name: reporting-service
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8088
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - attendance-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8081:8081" # This is the main entry point for your application
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8088
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - attendance-network
+
+# Define the shared network
+networks:
+  attendance-network:
+    driver: bridge
+
+# Define the persistent volume for MySQL data
+volumes:
+  mysql-data:
+    driver: local
