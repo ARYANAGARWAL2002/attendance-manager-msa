@@ -1,5 +1,5 @@
 # Stage 1: Build the application using a Maven image with Java 17
-FROM maven:3.9.6-eclipse-temurin-17-jammy AS build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 # Set the working directory in the container
 WORKDIR /app
@@ -29,8 +29,6 @@ WORKDIR /app
 COPY --from=build /app/target/user-service-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Expose the default Spring Boot port (8080)
-# Your application.properties doesn't set a port, so it will use the default
-# or one provided by the Config Server at runtime.
 EXPOSE 8080
 
 # Command to run the application when the container starts
