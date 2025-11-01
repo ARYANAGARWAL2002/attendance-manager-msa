@@ -78,7 +78,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/attendance_db
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       mysql:
         condition: service_healthy
@@ -102,7 +101,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/attendance_db
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       mysql:
         condition: service_healthy
@@ -126,7 +124,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/attendance_db
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       mysql:
         condition: service_healthy
@@ -148,7 +145,6 @@ services:
       # FIX: Tells service where to find config-server
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8088
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       config-server:
         condition: service_healthy
@@ -168,7 +164,6 @@ services:
       # FIX: Tells service where to find config-server
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8088
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       config-server:
         condition: service_healthy
