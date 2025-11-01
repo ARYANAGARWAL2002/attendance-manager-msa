@@ -14,7 +14,7 @@ services:
     networks:
       - attendance-network
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword # Fixes the MYSQL_ROOT_PASSWORD warning
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: attendance_db
     ports:
       - "3307:3306" # Port 3307 on your machine
