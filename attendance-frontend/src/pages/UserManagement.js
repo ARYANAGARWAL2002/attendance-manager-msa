@@ -172,9 +172,10 @@ export default function UserManagement() {
                         <div key={user.id} className="bg-gray-900/50 border border-cyan-400/30 p-4 rounded-lg flex items-center justify-between gap-4 hover:border-cyan-400/80 transition-all">
                             <div className="flex items-center gap-4">
                                 <div>
-                                    <h3 className="font-heading text-white font-semibold">{user.name}</h3>
-                                    <p className="text-sm text-cyan-300">{user.email}</p>
-                                </div>
+                                                                    <h3 className="font-heading text-white font-semibold">{user.name}</h3>
+                                                                    <p className="text-sm text-cyan-300">{user.email}</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">ID: {user.id}</p>
+                                                                </div>
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className={`px-2 py-1 text-xs font-bold rounded-full ${getRoleBadgeClass(user.role)}`}>

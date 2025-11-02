@@ -43,7 +43,7 @@ services:
 
   # 3. Config Server
   config-server:
-    image: ammare03/config-server:latest
+    image: aryanxagarwal/config-server:latest
     container_name: config-server
     networks:
       - attendance-network
