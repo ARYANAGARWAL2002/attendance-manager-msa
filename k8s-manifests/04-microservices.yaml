@@ -1,0 +1,289 @@
+# User Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: attendance-system
+  labels:
+    app: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
+        - name: wait-for-config
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z config-server 8088; do echo waiting for config-server; sleep 2; done;']
+        - name: wait-for-eureka
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
+      containers:
+        - name: user-service
+          image: aryanxagarwal/user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: "configserver:http://config-server:8088"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/attendance_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: attendance-system
+  labels:
+    app: user-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: http
+  selector:
+    app: user-service
+---
+# Course Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-service
+  namespace: attendance-system
+  labels:
+    app: course-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: course-service
+  template:
+    metadata:
+      labels:
+        app: course-service
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
+        - name: wait-for-config
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z config-server 8088; do echo waiting for config-server; sleep 2; done;']
+        - name: wait-for-eureka
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
+      containers:
+        - name: course-service
+          image: aryanxagarwal/course-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+              name: http
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: "configserver:http://config-server:8088"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/attendance_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: course-service
+  namespace: attendance-system
+  labels:
+    app: course-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+      name: http
+  selector:
+    app: course-service
+---
+# Attendance Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: attendance-service
+  namespace: attendance-system
+  labels:
+    app: attendance-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: attendance-service
+  template:
+    metadata:
+      labels:
+        app: attendance-service
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
+        - name: wait-for-config
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z config-server 8088; do echo waiting for config-server; sleep 2; done;']
+        - name: wait-for-eureka
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
+      containers:
+        - name: attendance-service
+          image: aryanxagarwal/attendance-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8083
+              name: http
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: "configserver:http://config-server:8088"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/attendance_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: attendance-service
+  namespace: attendance-system
+  labels:
+    app: attendance-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8083
+      targetPort: 8083
+      protocol: TCP
+      name: http
+  selector:
+    app: attendance-service
+---
+# Reporting Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting-service
+  namespace: attendance-system
+  labels:
+    app: reporting-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reporting-service
+  template:
+    metadata:
+      labels:
+        app: reporting-service
+    spec:
+      initContainers:
+        - name: wait-for-config
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z config-server 8088; do echo waiting for config-server; sleep 2; done;']
+        - name: wait-for-eureka
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
+      containers:
+        - name: reporting-service
+          image: aryanxagarwal/reporting-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8084
+              name: http
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: "configserver:http://config-server:8088"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting-service
+  namespace: attendance-system
+  labels:
+    app: reporting-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8084
+      targetPort: 8084
+      protocol: TCP
+      name: http
+  selector:
+    app: reporting-service
