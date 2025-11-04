@@ -7,7 +7,8 @@ env:
     AWS_REGION: "eu-north-1"
     # -----------------------------------------------------------------
     EKS_CLUSTER_NAME: "msa-cluster"
-    SERVICES: "api-gateway attendance-frontend attendance-service config-server course-service eureka-server reporting-service user-service"
+    # UPDATED: Removed "config-server" from this list
+    SERVICES: "api-gateway attendance-frontend attendance-service course-service eureka-server reporting-service user-service"
     IMAGE_TAG: "latest"
 
 phases:
@@ -29,7 +30,7 @@ phases:
 
   build:
     commands:
-      - echo "Building and pushing all 8 microservices..."
+      - echo "Building and pushing all 7 microservices..."
       - |
         set -e
         for service in $SERVICES; do
@@ -60,7 +61,10 @@ phases:
       - echo "Applying Kubernetes manifests..."
       - kubectl apply -f 00-namespace.yaml
       - kubectl apply -f 02-eureka-server.yaml
-      - kubectl apply -f 03-config-server.yaml
+
+      # UPDATED: Commented out config-server deployment
+      # - kubectl apply -f 03-config-server.yaml
+
       - kubectl apply -f 04-microservices.yaml
       - kubectl apply -f 05-api-gateway.yaml
       - kubectl apply -f 06-frontend.yaml
