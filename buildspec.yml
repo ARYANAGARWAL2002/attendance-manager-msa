@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     # -----------------------------------------------------------------
-    # This should be your AWS region
+    # This should be your AWS region (eu-north-1)
     AWS_REGION: "eu-north-1"
     # -----------------------------------------------------------------
     EKS_CLUSTER_NAME: "msa-cluster"
@@ -31,6 +31,7 @@ phases:
     commands:
       - echo "Building and pushing all 8 microservices..."
       - |
+        set -e
         for service in $SERVICES; do
           echo "Building $service..."
           cd $service
@@ -46,9 +47,12 @@ phases:
       - echo "Updating kubeconfig for EKS cluster $EKS_CLUSTER_NAME"
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
       - echo "Preparing Kubernetes manifests"
+      - echo "Returning to source directory..."
+      - cd $CODEBUILD_SRC_DIR
       - cd k8s-manifests
       - echo "Replacing image placeholders..."
       - |
+        set -e
         for service in $SERVICES; do
           placeholder_name=$(echo "$service" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
           sed -i "s|IMAGE_PLACEHOLDER_${placeholder_name}|$ECR_REPO_PREFIX/$service:$IMAGE_TAG|g" *.yaml
