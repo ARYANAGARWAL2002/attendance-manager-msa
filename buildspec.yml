@@ -2,13 +2,10 @@ version: 0.2
 
 env:
   variables:
-    # -----------------------------------------------------------------
-    # This should be your AWS region (eu-north-1)
     AWS_REGION: "eu-north-1"
-    # -----------------------------------------------------------------
     EKS_CLUSTER_NAME: "msa-cluster"
-    # UPDATED: Removed "config-server" from this list
     SERVICES: "api-gateway attendance-frontend attendance-service course-service eureka-server reporting-service user-service"
+    CONFIG_SERVICE_NAME: "config-server" # Added config server name
     IMAGE_TAG: "latest"
 
 phases:
@@ -51,23 +48,28 @@ phases:
       - echo "Returning to source directory..."
       - cd $CODEBUILD_SRC_DIR
       - cd k8s-manifests
-      - echo "Replacing image placeholders..."
+      - echo "Replacing image placeholders for 7 services..."
       - |
         set -e
         for service in $SERVICES; do
           placeholder_name=$(echo "$service" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
           sed -i "s|IMAGE_PLACEHOLDER_${placeholder_name}|$ECR_REPO_PREFIX/$service:$IMAGE_TAG|g" *.yaml
         done
+      - echo "Replacing image placeholder for config-server..."
+      # This manually fixes the config-server image name, just in case
+      - sed -i "s|IMAGE_PLACEHOLDER_CONFIG_SERVER|$ECR_REPO_PREFIX/$CONFIG_SERVICE_NAME:$IMAGE_TAG|g" 03-config-server.yaml
+
       - echo "Applying Kubernetes manifests..."
       - kubectl apply -f 00-namespace.yaml
       - kubectl apply -f 02-eureka-server.yaml
-
-      # UPDATED: Re-enabled config-server deployment
       - kubectl apply -f 03-config-server.yaml
-
       - kubectl apply -f 04-microservices.yaml
       - kubectl apply -f 05-api-gateway.yaml
       - kubectl apply -f 06-frontend.yaml
+
+      - echo "Forcing a restart of all deployments to pull fresh images..."
+      - kubectl rollout restart deployment -n attendance-system
+
       - echo "Deployment complete."
 
 artifacts:
