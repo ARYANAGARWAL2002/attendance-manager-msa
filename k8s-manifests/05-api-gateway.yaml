@@ -1,3 +1,4 @@
+# 05-api-gateway.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,10 +26,8 @@ spec:
       containers:
         - name: api-gateway
           image: IMAGE_PLACEHOLDER_API_GATEWAY
-          imagePullPolicy: Always
           ports:
             - containerPort: 8080
-              name: http
           env:
             - name: SPRING_CONFIG_IMPORT
               value: "configserver:http://config-server:8088"
@@ -36,11 +35,11 @@ spec:
               value: "http://eureka-server:8761/eureka"
           resources:
             limits:
-              memory: "512Mi"  # <-- Lowered the limit
+              memory: "512Mi"
               cpu: "500m"
-              requests:
-                memory: "256Mi"  # <-- Lowered the request
-                cpu: "250m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
 ---
 apiVersion: v1
 kind: Service
@@ -50,11 +49,10 @@ metadata:
   labels:
     app: api-gateway
 spec:
-  type: LoadBalancer
-  ports:
-    - port: 8089
-      targetPort: 8080
-      protocol: TCP
-      name: http
   selector:
     app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8089  # This is the port for the LoadBalancer
+      targetPort: 8080 # This is the port the container listens on
+  type: LoadBalancer
