@@ -46,9 +46,9 @@ spec:
             limits:
               memory: "512Mi"  # <-- Lowered the limit
               cpu: "500m"
-              requests:
-                memory: "256Mi"  # <-- Lowered the request
-                cpu: "250m"
+            requests:
+              memory: "256Mi"  # <-- THE FIX
+              cpu: "250m"
 ---
 apiVersion: v1
 kind: Service
