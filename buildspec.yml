@@ -62,8 +62,8 @@ phases:
       - kubectl apply -f 00-namespace.yaml
       - kubectl apply -f 02-eureka-server.yaml
 
-      # UPDATED: Commented out config-server deployment
-      # - kubectl apply -f 03-config-server.yaml
+      # UPDATED: Re-enabled config-server deployment
+      - kubectl apply -f 03-config-server.yaml
 
       - kubectl apply -f 04-microservices.yaml
       - kubectl apply -f 05-api-gateway.yaml
