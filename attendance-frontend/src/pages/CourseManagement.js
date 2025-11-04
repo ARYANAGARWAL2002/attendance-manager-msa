@@ -133,9 +133,9 @@ export default function CourseManagement() {
     return (
         <div className="min-h-screen bg-black text-cyan-200 font-paragraph p-8">
             <header className="text-center mb-16">
-                <p className="font-paragraph text-cyan-400 uppercase tracking-widest mb-4">Course Management System v2.0</p>
+                <p className="font-paragraph text-cyan-400 uppercase tracking-widest mb-4"></p>
                 <h1 className="text-6xl md:text-8xl font-heading font-black text-white" style={{textShadow: '2px 2px 0px rgba(34, 211, 238, 0.5), -2px -2px 0px rgba(255, 0, 255, 0.3)'}}>
-                    Data Stream <span className="text-cyan-400">Control</span>
+                    Course Management <span className="text-cyan-400">System</span>
                 </h1>
             </header>
             
