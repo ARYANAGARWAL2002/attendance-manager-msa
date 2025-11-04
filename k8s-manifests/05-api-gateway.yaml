@@ -35,12 +35,12 @@ spec:
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka"
           resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
             limits:
-              memory: "1Gi"
+              memory: "512Mi"  # <-- Lowered the limit
               cpu: "500m"
+              requests:
+                memory: "256Mi"  # <-- Lowered the request
+                cpu: "250m"
 ---
 apiVersion: v1
 kind: Service
