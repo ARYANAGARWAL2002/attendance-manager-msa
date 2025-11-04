@@ -28,7 +28,7 @@ spec:
           command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
       containers:
         - name: user-service
-          image: aryanxagarwal/user-service:latest
+          image: IMAGE_PLACEHOLDER_USER_SERVICE
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
@@ -104,7 +104,7 @@ spec:
           command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
       containers:
         - name: course-service
-          image: aryanxagarwal/course-service:latest
+          image: IMAGE_PLACEHOLDER_COURSE_SERVICE
           imagePullPolicy: Always
           ports:
             - containerPort: 8082
@@ -180,7 +180,7 @@ spec:
           command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
       containers:
         - name: attendance-service
-          image: aryanxagarwal/attendance-service:latest
+          image: IMAGE_PLACEHOLDER_ATTENDANCE_SERVICE
           imagePullPolicy: Always
           ports:
             - containerPort: 8083
@@ -253,7 +253,7 @@ spec:
           command: ['sh', '-c', 'until nc -z eureka-server 8761; do echo waiting for eureka-server; sleep 2; done;']
       containers:
         - name: reporting-service
-          image: aryanxagarwal/reporting-service:latest
+          image: IMAGE_PLACEHOLDER_REPORTING_SERVICE
           imagePullPolicy: Always
           ports:
             - containerPort: 8084

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: config-server
-          image: aryanxagarwal/config-server:latest
+          image: IMAGE_PLACEHOLDER_CONFIG_SERVER
           ports:
             - containerPort: 8088
               name: http

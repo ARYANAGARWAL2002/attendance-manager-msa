@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: attendance-frontend
-          image: aryanxagarwal/attendance-frontend:latest
+          image: IMAGE_PLACEHOLDER_ATTENDANCE_FRONTEND
           ports:
             - containerPort: 80
               name: http

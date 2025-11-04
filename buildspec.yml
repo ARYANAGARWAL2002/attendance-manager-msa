@@ -1,0 +1,70 @@
+version: 0.2
+
+env:
+  variables:
+    # -----------------------------------------------------------------
+    # IMPORTANT: Change this value to your AWS region code!
+    AWS_REGION: "eu-north-1"
+    # -----------------------------------------------------------------
+    EKS_CLUSTER_NAME: "msa-cluster"
+    SERVICES: "api-gateway attendance-frontend attendance-service config-server course-service eureka-server reporting-service user-service"
+    IMAGE_TAG: "latest"
+
+phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo "Installing kubectl"
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+
+  pre_build:
+    commands:
+      - echo "Getting AWS Account ID"
+      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - if [ -z "$AWS_ACCOUNT_ID" ]; then echo "AWS_ACCOUNT_ID is not set. Exiting."; exit 1; fi
+      - echo "Logging in to Amazon ECR"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      # Make the ECR prefix available to all phases
+      - export ECR_REPO_PREFIX="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+  build:
+    commands:
+      - echo "Building and pushing all 8 microservices..."
+      - for service in $SERVICES; do
+      -   echo "Building $service..."
+      -   cd $service
+      -   docker build -t $ECR_REPO_PREFIX/$service:$IMAGE_TAG .
+      -   echo "Pushing $service to ECR..."
+      -   docker push $ECR_REPO_PREFIX/$service:$IMAGE_TAG
+      -   cd ..
+      - done
+      - echo "All images built and pushed."
+
+  post_build:
+    commands:
+      - echo "Updating kubeconfig for EKS cluster $EKS_CLUSTER_NAME"
+      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
+      - echo "Preparing Kubernetes manifests"
+      - cd k8s-manifests
+
+      # Replace placeholders in all YAML files
+      - echo "Replacing image placeholders..."
+      - for service in $SERVICES; do
+      -   placeholder_name=$(echo "$service" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
+      -   sed -i "s|IMAGE_PLACEHOLDER_${placeholder_name}|$ECR_REPO_PREFIX/$service:$IMAGE_TAG|g" *.yaml
+      - done
+
+      - echo "Applying Kubernetes manifests..."
+      - kubectl apply -f 00-namespace.yaml
+      - kubectl apply -f 02-eureka-server.yaml
+      - kubectl apply -f 03-config-server.yaml
+      - kubectl apply -f 04-microservices.yaml
+      - kubectl apply -f 05-api-gateway.yaml
+      - kubectl apply -f 06-frontend.yaml
+      - echo "Deployment complete."
+
+artifacts:
+  files: []
